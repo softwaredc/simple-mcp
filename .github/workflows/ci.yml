@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  go:
+    name: go ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: test
+            cmd: test
+          - name: test -race
+            cmd: test -race
+          - name: vet
+            cmd: vet
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: ${{ matrix.cmd }}
+        working-directory: go
+        run: go ${{ matrix.cmd }} ./...
+
+  cpp:
+    name: cpp ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: gcc
+            cc: gcc
+          - name: clang
+            cc: clang
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install clang
+        if: matrix.cc == 'clang'
+        run: sudo apt-get update && sudo apt-get install -y clang
+
+      - name: Build and test
+        env:
+          CXX: ${{ matrix.cc == 'clang' && 'clang++' || 'g++' }}
+        run: |
+          cmake -S cpp -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -j
+          cd build && ctest --output-on-failure
+
+  sanitize:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: C++ ASan + UBSan
+            flags: -fsanitize=address,undefined
+            lang: cpp
+          - name: C++ ThreadSanitizer
+            flags: -fsanitize=thread
+            lang: cpp
+          - name: Go race
+            flags: ""
+            lang: go
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        if: matrix.lang == 'go'
+        with:
+          go-version: '1.22'
+
+      - name: C++ sanitizer
+        if: matrix.lang == 'cpp'
+        env:
+          CXXFLAGS: ${{ matrix.flags }}
+        run: |
+          g++ -std=c++17 -g -O1 ${{ matrix.flags }} -Icpp/include \
+            cpp/tests/test_main.cpp cpp/src/*.cpp -o /tmp/test_mcp -lpthread
+          ASAN_OPTIONS=detect_leaks=1 /tmp/test_mcp
+
+      - name: Go race
+        if: matrix.lang == 'go'
+        working-directory: go
+        run: go test -race ./...
+
+  benchmark:
+    name: benchmarks (informational)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - name: Run
+        working-directory: go
+        run: |
+          go build -o /tmp/mcpbench ./cmd/mcpbench
+          /tmp/mcpbench -n 20000

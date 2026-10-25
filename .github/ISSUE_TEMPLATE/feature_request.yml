@@ -1,0 +1,41 @@
+name: Feature request
+description: Suggest something, ideally with a reason it teaches
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is a teaching implementation. A feature is worth adding when it
+        makes the protocol clearer, not when it makes the library more capable.
+        Say which one you are asking for.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What you want
+    validations:
+      required: true
+
+  - type: textarea
+    id: teaches
+    attributes:
+      label: What it teaches
+      description: Which part of MCP becomes visible because of this?
+    validations:
+      required: true
+
+  - type: textarea
+    id: spec
+    attributes:
+      label: Spec reference
+      description: Link to the section of the MCP specification, if applicable.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before filing
+      options:
+        - label: I checked the README's Limitations section and this is not already excluded
+          required: true
+        - label: I checked docs/PROTOCOL.md and this is not listed as deliberately not implemented
+          required: true

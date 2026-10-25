@@ -1,0 +1,39 @@
+# build output — directory form so it never matches a tracked top-level file
+build/
+bin/
+cmake-build-*/
+*.o
+*.obj
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+
+# The root Makefile is ours: `make test` is what people run after cloning.
+# A bare "Makefile" rule here would silently exclude it from the repo.
+!/Makefile
+
+# Go
+go.sum
+
+# binaries the README tells you to build by hand
+go/mcpserver
+go/mcpclient
+go/mcpbench
+
+# cmake artifacts
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+
+# editors
+.idea/
+.vscode/
+*.swp
+*~
+
+# os
+.DS_Store
+Thumbs.db

@@ -1,0 +1,62 @@
+name: Bug report
+description: Report a defect, ideally with a spec reference
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Corrections are the most valuable contribution this repository can
+        receive. If a comment is wrong or a protocol detail does not match the
+        spec, pointing at the spec section is exactly what is needed.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Include the exact error, and the message you sent if relevant.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+
+  - type: dropdown
+    id: language
+    attributes:
+      label: Implementation
+      options:
+        - Go
+        - C++
+        - Both
+        - Documentation
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `git describe --tags` or the release you are on.
+    validations:
+      required: true
+
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: OS, kernel, compiler and language versions.
+      placeholder: |
+        Ubuntu 24.04, kernel 6.18.33
+        go1.22.2 / g++ 13.3.0
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: Commands or a snippet. A failing test is better than a description.
+    validations:
+      required: true
